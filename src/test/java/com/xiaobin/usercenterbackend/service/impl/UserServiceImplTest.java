@@ -25,4 +25,11 @@ public class UserServiceImplTest {
         System.out.println(result);
         // Assertions.assertEquals(3, result);
     }
+
+    @Test
+    void testLogin(){
+        String userAccount = "xiaobin";
+        String userPassword = "12345678";
+        // userService.userLogin(userAccount,userPasswordword,)
+    }
 }

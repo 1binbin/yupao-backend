@@ -3,6 +3,8 @@ package com.xiaobin.usercenterbackend.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiaobin.usercenterbackend.model.domain.User;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 用户服务
  *
@@ -15,10 +17,21 @@ public interface UserService extends IService<User> {
     /**
      * 实现用户注册逻辑
      *
-     * @param userAccount 用户账号
-     * @param userPassword 用户密码
+     * @param userAccount   用户账号
+     * @param userPassword  用户密码
      * @param checkPassword 校验密码
      * @return 用户id
      */
     long userRegister(String userAccount, String userPassword, String checkPassword);
+
+
+    /**
+     * 实现用户登录
+     *
+     * @param userAccount  用户账号
+     * @param userPassword 用户密码
+     * @param request      请求域
+     * @return 脱密的用户数据
+     */
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 }
