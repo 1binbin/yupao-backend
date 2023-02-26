@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface UserService extends IService<User> {
 
+
     /**
      * 实现用户注册逻辑
      *

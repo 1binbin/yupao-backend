@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.regex.Pattern;
 
+import static com.xiaobin.usercenterbackend.contant.UserConstant.*;
+
 /**
  * 用户服务实现类
  *
@@ -28,14 +30,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private UserMapper userMapper;
 
-    /**
-     * 盐值，混淆密码
-     */
-    private static final String SALT = "bin";
-    /**
-     * 用户登录态
-     */
-    private static final String USER_LOGIN_STATE = "userLoginState";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -125,6 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setUserStatus(user.getUserStatus());
         handlerUser.setPlanetCode(user.getPlanetCode());
         HttpSession session = request.getSession();
+        session.setMaxInactiveInterval(SESSION_TIME);
         session.setAttribute(USER_LOGIN_STATE, handlerUser);
         // 4.登录成功返回脱密信息
         return handlerUser;
