@@ -5,7 +5,7 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     river-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yupi
+    url: jdbc:mysql://localhost:3306/yupi?serverTimezone=Asia/Shanghai
     username: root
     password: Abin21428!!
 #    Session timeout
@@ -13,6 +13,9 @@ spring:
     timeout: 86400
 server:
   port: 8080
+#  Uniform request prefix
+  servlet:
+    context-path: /api
 
 # Automatic hump switching is prohibited
 mybatis-plus:
