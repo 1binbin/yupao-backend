@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.xiaobin.usercenterbackend.contant.UserConstant.ADMIN_ROLE;
 import static com.xiaobin.usercenterbackend.contant.UserConstant.USER_LOGIN_STATE;
@@ -58,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(@RequestBody String username, HttpServletRequest request) {
+    public List<User> searchUsers(@RequestParam String username, HttpServletRequest request) {
         if (!isAdmin(request)) {
             return new ArrayList<>();
         }
@@ -67,7 +68,9 @@ public class UserController {
             // 两边都模糊的查询 即 '%username%'
             userQueryWrapper.like("username", username);
         }
-        return userService.list(userQueryWrapper);
+        List<User> list = userService.list(userQueryWrapper);
+        // 先转换为数据流，循环设置每个密码为空，再拼接成一个完整的list
+        return list.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
     }
 
     @PostMapping("/delete")

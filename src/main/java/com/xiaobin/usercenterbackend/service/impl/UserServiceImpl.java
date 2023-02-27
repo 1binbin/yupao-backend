@@ -15,7 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.regex.Pattern;
 
-import static com.xiaobin.usercenterbackend.contant.UserConstant.*;
+import static com.xiaobin.usercenterbackend.contant.UserConstant.SALT;
+import static com.xiaobin.usercenterbackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现类
@@ -107,6 +108,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // TODO: 2023/2/26 单位之间内限制错误登录次数
 
         // 3.记录用户的登录状态
+        User safeUser = getSafeUser(user);
+        HttpSession session = request.getSession();
+        session.setAttribute(USER_LOGIN_STATE, safeUser);
+        // 4.登录成功返回脱密信息
+        return safeUser;
+    }
+
+    /**
+     * 用户脱敏
+     *
+     * @param user 没有脱敏的用户信息
+     * @return 已经脱敏的用户信息
+     */
+    @Override
+    public User getSafeUser(User user) {
         User handlerUser = new User();
         handlerUser.setId(user.getId());
         handlerUser.setUsername(user.getUsername());
@@ -118,10 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setCreateTime(user.getCreateTime());
         handlerUser.setUserStatus(user.getUserStatus());
         handlerUser.setPlanetCode(user.getPlanetCode());
-        HttpSession session = request.getSession();
-        session.setMaxInactiveInterval(SESSION_TIME);
-        session.setAttribute(USER_LOGIN_STATE, handlerUser);
-        // 4.登录成功返回脱密信息
+        handlerUser.setUserRole(user.getUserRole());
         return handlerUser;
     }
 }
