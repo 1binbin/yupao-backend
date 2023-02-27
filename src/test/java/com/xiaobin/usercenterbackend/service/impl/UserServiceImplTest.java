@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Author hongxiaobin
@@ -30,6 +31,6 @@ public class UserServiceImplTest {
     void testLogin(){
         String userAccount = "xiaobin";
         String userPassword = "12345678";
-        // userService.userLogin(userAccount,userPasswordword,)
+        // userService.userLogin(userAccount,userPasswordword);
     }
 }

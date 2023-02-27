@@ -123,6 +123,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getSafeUser(User user) {
+        // 在Controller层和Service层都必须对用户进行判空
+        if (user == null) {
+            return null;
+        }
         User handlerUser = new User();
         handlerUser.setId(user.getId());
         handlerUser.setUsername(user.getUsername());
@@ -136,6 +140,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setPlanetCode(user.getPlanetCode());
         handlerUser.setUserRole(user.getUserRole());
         return handlerUser;
+    }
+
+    @Override
+    public int userLoginOut(HttpServletRequest request) {
+        if (request == null) {
+            return 0;
+        }
+        // 移除session中保存的用户信息即为注销
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 1;
     }
 }
 

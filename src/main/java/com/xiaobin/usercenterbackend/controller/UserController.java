@@ -58,6 +58,14 @@ public class UserController {
         return userService.userLogin(userAccount, userPassword, request);
     }
 
+    @PostMapping("/logout")
+    public Integer userLoginOut(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return userService.userLoginOut(request);
+    }
+
     @GetMapping("/search")
     public List<User> searchUsers(@RequestParam String username, HttpServletRequest request) {
         if (!isAdmin(request)) {
@@ -84,6 +92,22 @@ public class UserController {
         // 实现的是逻辑删除
         return userService.removeById(id);
     }
+
+    @GetMapping("/current")
+    public User getCurrent(HttpServletRequest httpServletRequest) {
+        Object userObject = httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObject;
+        // 对于存在频繁更新的数据需要去数据库重新获取
+        // 对于没有存在频繁更新的数据可以直接在session缓存中读取并返回，提高性能
+        if (currentUser == null) {
+            return null;
+        }
+        Long userId = currentUser.getId();
+        // TODO: 2023/2/27 检验用户是否合法
+        User userServiceById = userService.getById(userId);
+        return userService.getSafeUser(userServiceById);
+    }
+
 
     /**
      * 鉴权 仅管理员可查询
