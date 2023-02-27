@@ -1,12 +1,10 @@
 package com.xiaobin.usercenterbackend.service.impl;
 
 import com.xiaobin.usercenterbackend.service.UserService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Author hongxiaobin
@@ -22,7 +20,8 @@ public class UserServiceImplTest {
         String userAccount = "xiaobin++";
         String userPassword = "12345678";
         String checkPassword = "12345678";
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        String planetCode = "123456";
+        long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
         System.out.println(result);
         // Assertions.assertEquals(3, result);
     }

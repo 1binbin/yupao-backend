@@ -33,15 +33,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
             return -1;
         }
         if (userAccount.length() < 4) {
             return -1;
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
+            return -1;
+        }
+        if (planetCode.length() > 5) {
             return -1;
         }
         // 2.校验账户不能包含特殊字符
@@ -55,20 +58,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return -1;
         }
         // 4.账户不能重复
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("userAccount", userAccount);
-        long count = userMapper.selectCount(userQueryWrapper);
-        if (count > 0) {
+        QueryWrapper<User> userAccountQueryWrapper = new QueryWrapper<>();
+        userAccountQueryWrapper.eq("userAccount", userAccount);
+        long userAccountCount = userMapper.selectCount(userAccountQueryWrapper);
+        if (userAccountCount > 0) {
+            return -1;
+        }
+        // 5.编号不能重复
+        QueryWrapper<User> planetCodeQueryWrapper = new QueryWrapper<>();
+        planetCodeQueryWrapper.eq("planetCode", planetCode);
+        long planetCodeCount = userMapper.selectCount(planetCodeQueryWrapper);
+        if (planetCodeCount > 0) {
             return -1;
         }
 
-        // 5.密码加密（一般使用MD5，这里使用一个工具库）
+        // 6.密码加密（一般使用MD5，这里使用一个工具库）
         String digestPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
-        // 6.插入数据
+        // 7.插入数据
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(digestPassword);
+        user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             return -1;
