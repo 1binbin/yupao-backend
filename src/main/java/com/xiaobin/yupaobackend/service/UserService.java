@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiaobin.yupaobackend.model.domain.User;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户服务
@@ -52,4 +53,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     int userLoginOut(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     * @param tagList 标签列表
+     * @return
+     */
+    List<User> searchUserByTags(List<String> tagList);
 }
