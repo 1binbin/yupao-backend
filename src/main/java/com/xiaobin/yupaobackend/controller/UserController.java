@@ -1,14 +1,14 @@
-package com.xiaobin.usercenterbackend.controller;
+package com.xiaobin.yupaobackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.xiaobin.usercenterbackend.common.BaseResponse;
-import com.xiaobin.usercenterbackend.common.ErrorCode;
-import com.xiaobin.usercenterbackend.common.ResultUtils;
-import com.xiaobin.usercenterbackend.exception.BusinessException;
-import com.xiaobin.usercenterbackend.model.domain.User;
-import com.xiaobin.usercenterbackend.model.domain.request.UserLoginRequest;
-import com.xiaobin.usercenterbackend.model.domain.request.UserRegisterRequest;
-import com.xiaobin.usercenterbackend.service.UserService;
+import com.xiaobin.yupaobackend.common.BaseResponse;
+import com.xiaobin.yupaobackend.common.ErrorCode;
+import com.xiaobin.yupaobackend.common.ResultUtils;
+import com.xiaobin.yupaobackend.exception.BusinessException;
+import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.domain.request.UserLoginRequest;
+import com.xiaobin.yupaobackend.model.domain.request.UserRegisterRequest;
+import com.xiaobin.yupaobackend.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.xiaobin.usercenterbackend.contant.UserConstant.ADMIN_ROLE;
-import static com.xiaobin.usercenterbackend.contant.UserConstant.USER_LOGIN_STATE;
+import static com.xiaobin.yupaobackend.contant.UserConstant.ADMIN_ROLE;
+import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务控制层

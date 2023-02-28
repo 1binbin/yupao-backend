@@ -1,4 +1,4 @@
-package com.xiaobin.usercenterbackend;
+package com.xiaobin.yupaobackend;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

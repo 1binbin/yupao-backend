@@ -1,4 +1,4 @@
-package com.xiaobin.usercenterbackend.common;
+package com.xiaobin.yupaobackend.common;
 
 import lombok.Data;
 

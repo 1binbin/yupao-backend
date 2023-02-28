@@ -1,4 +1,4 @@
-package com.xiaobin.usercenterbackend.model.domain;
+package com.xiaobin.yupaobackend.model.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 

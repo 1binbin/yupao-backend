@@ -1,12 +1,12 @@
-package com.xiaobin.usercenterbackend.service.impl;
+package com.xiaobin.yupaobackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xiaobin.usercenterbackend.common.ErrorCode;
-import com.xiaobin.usercenterbackend.exception.BusinessException;
-import com.xiaobin.usercenterbackend.mapper.UserMapper;
-import com.xiaobin.usercenterbackend.model.domain.User;
-import com.xiaobin.usercenterbackend.service.UserService;
+import com.xiaobin.yupaobackend.common.ErrorCode;
+import com.xiaobin.yupaobackend.exception.BusinessException;
+import com.xiaobin.yupaobackend.mapper.UserMapper;
+import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.regex.Pattern;
 
-import static com.xiaobin.usercenterbackend.contant.UserConstant.SALT;
-import static com.xiaobin.usercenterbackend.contant.UserConstant.USER_LOGIN_STATE;
+import static com.xiaobin.yupaobackend.contant.UserConstant.SALT;
+import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现类

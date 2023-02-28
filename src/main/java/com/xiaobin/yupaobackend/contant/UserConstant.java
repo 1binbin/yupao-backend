@@ -1,4 +1,4 @@
-package com.xiaobin.usercenterbackend.contant;
+package com.xiaobin.yupaobackend.contant;
 
 /**
  * 用户常量类

@@ -1,6 +1,6 @@
-package com.xiaobin.usercenterbackend.mapper;
+package com.xiaobin.yupaobackend.mapper;
 
-import com.xiaobin.usercenterbackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.domain.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

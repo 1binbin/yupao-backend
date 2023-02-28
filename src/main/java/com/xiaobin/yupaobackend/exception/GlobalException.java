@@ -1,8 +1,8 @@
-package com.xiaobin.usercenterbackend.exception;
+package com.xiaobin.yupaobackend.exception;
 
-import com.xiaobin.usercenterbackend.common.BaseResponse;
-import com.xiaobin.usercenterbackend.common.ErrorCode;
-import com.xiaobin.usercenterbackend.common.ResultUtils;
+import com.xiaobin.yupaobackend.common.BaseResponse;
+import com.xiaobin.yupaobackend.common.ErrorCode;
+import com.xiaobin.yupaobackend.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

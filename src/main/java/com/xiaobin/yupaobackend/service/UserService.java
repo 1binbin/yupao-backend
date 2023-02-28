@@ -1,7 +1,7 @@
-package com.xiaobin.usercenterbackend.service;
+package com.xiaobin.yupaobackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.xiaobin.usercenterbackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.domain.User;
 
 import javax.servlet.http.HttpServletRequest;
 

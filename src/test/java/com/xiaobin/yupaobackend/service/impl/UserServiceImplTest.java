@@ -1,6 +1,6 @@
-package com.xiaobin.usercenterbackend.service.impl;
+package com.xiaobin.yupaobackend.service.impl;
 
-import com.xiaobin.usercenterbackend.service.UserService;
+import com.xiaobin.yupaobackend.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

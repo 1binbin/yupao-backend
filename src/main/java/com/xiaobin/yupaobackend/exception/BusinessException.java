@@ -1,6 +1,6 @@
-package com.xiaobin.usercenterbackend.exception;
+package com.xiaobin.yupaobackend.exception;
 
-import com.xiaobin.usercenterbackend.common.ErrorCode;
+import com.xiaobin.yupaobackend.common.ErrorCode;
 
 /**
  * 全局异常类

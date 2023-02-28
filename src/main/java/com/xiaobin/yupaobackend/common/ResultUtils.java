@@ -1,4 +1,4 @@
-package com.xiaobin.usercenterbackend.common;
+package com.xiaobin.yupaobackend.common;
 
 /**
  * 生成通用返回对象
