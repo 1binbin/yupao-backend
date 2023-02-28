@@ -1,6 +1,10 @@
 package com.xiaobin.usercenterbackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.xiaobin.usercenterbackend.common.BaseResponse;
+import com.xiaobin.usercenterbackend.common.ErrorCode;
+import com.xiaobin.usercenterbackend.common.ResultUtils;
+import com.xiaobin.usercenterbackend.exception.BusinessException;
 import com.xiaobin.usercenterbackend.model.domain.User;
 import com.xiaobin.usercenterbackend.model.domain.request.UserLoginRequest;
 import com.xiaobin.usercenterbackend.model.domain.request.UserRegisterRequest;
@@ -10,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,9 +33,9 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求数据为空");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
@@ -40,37 +43,40 @@ public class UserController {
         String planetCode = userRegisterRequest.getPlanetCode();
         // 进行简单的校验
         if (StringUtils.isAnyBlank(userPassword, userPassword, checkPassword, planetCode)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"参数为空");
         }
-        return userService.userRegister(userAccount, userPassword, checkPassword,planetCode);
+        long userRegister = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
+        return ResultUtils.success(userRegister);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest,
-                          HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest,
+                                        HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            ResultUtils.error(ErrorCode.NULL_ERROR,"请求数据为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"参数为空");
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
     }
 
     @PostMapping("/logout")
-    public Integer userLoginOut(HttpServletRequest request) {
+    public BaseResponse<Integer> userLoginOut(HttpServletRequest request) {
         if (request == null) {
-            return null;
+            ResultUtils.error(ErrorCode.NO_LOGIN,"账号未登录");
         }
-        return userService.userLoginOut(request);
+        int result = userService.userLoginOut(request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(@RequestParam String username, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(@RequestParam(required = false) String username, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            ResultUtils.error(ErrorCode.NO_AUTH,"账户不是管理员，暂无权限");
         }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
@@ -79,34 +85,37 @@ public class UserController {
         }
         List<User> list = userService.list(userQueryWrapper);
         // 先转换为数据流，循环设置每个密码为空，再拼接成一个完整的list
-        return list.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
+        List<User> result = list.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (id < 0) {
-            return false;
+            ResultUtils.error(ErrorCode.PARAMS_ERROR,"账号小于0");
         }
         if (!isAdmin(request)) {
-            return false;
+            ResultUtils.error(ErrorCode.NO_AUTH,"账户不是管理员，暂无权限");
         }
         // 实现的是逻辑删除
-        return userService.removeById(id);
+        boolean result = userService.removeById(id);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/current")
-    public User getCurrent(HttpServletRequest httpServletRequest) {
+    public BaseResponse<User> getCurrent(HttpServletRequest httpServletRequest) {
         Object userObject = httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObject;
         // 对于存在频繁更新的数据需要去数据库重新获取
         // 对于没有存在频繁更新的数据可以直接在session缓存中读取并返回，提高性能
         if (currentUser == null) {
-            return null;
+            ResultUtils.error(ErrorCode.NO_LOGIN,"账号未登录");
         }
         Long userId = currentUser.getId();
         // TODO: 2023/2/27 检验用户是否合法
         User userServiceById = userService.getById(userId);
-        return userService.getSafeUser(userServiceById);
+        User result = userService.getSafeUser(userServiceById);
+        return ResultUtils.success(result);
     }
 
 

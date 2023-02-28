@@ -2,6 +2,8 @@ package com.xiaobin.usercenterbackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiaobin.usercenterbackend.common.ErrorCode;
+import com.xiaobin.usercenterbackend.exception.BusinessException;
 import com.xiaobin.usercenterbackend.mapper.UserMapper;
 import com.xiaobin.usercenterbackend.model.domain.User;
 import com.xiaobin.usercenterbackend.service.UserService;
@@ -36,40 +38,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1.校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
         }
         if (userAccount.length() < 4) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户账号小于4位");
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户密码小于8位");
         }
         if (planetCode.length() > 5) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户编号大于5位");
         }
         // 2.校验账户不能包含特殊字符
         String pattern = "^[\\u4E00-\\u9FA5A-Za-z0-9]+$";
         boolean matches = Pattern.matches(pattern, userAccount);
         if (!matches) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户包含特殊字符");
         }
         // 3.校验密码和二次密码是否相同
         if (!userPassword.equals(checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"两次密码输入不相同");
         }
         // 4.账户不能重复
         QueryWrapper<User> userAccountQueryWrapper = new QueryWrapper<>();
         userAccountQueryWrapper.eq("userAccount", userAccount);
         long userAccountCount = userMapper.selectCount(userAccountQueryWrapper);
         if (userAccountCount > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"账户重复");
         }
         // 5.编号不能重复
         QueryWrapper<User> planetCodeQueryWrapper = new QueryWrapper<>();
         planetCodeQueryWrapper.eq("planetCode", planetCode);
         long planetCodeCount = userMapper.selectCount(planetCodeQueryWrapper);
         if (planetCodeCount > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"用户编号重复");
         }
 
         // 6.密码加密（一般使用MD5，这里使用一个工具库）
@@ -82,7 +84,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
-            return -1;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"插入数据异常");
         }
         return user.getId();
     }
@@ -91,19 +93,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1.校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
         }
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户账号小于4位");
         }
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户密码小于8位");
         }
         // 2.校验账户不能包含特殊字符
         String pattern = "^[\\u4E00-\\u9FA5A-Za-z0-9]+$";
         boolean matches = Pattern.matches(pattern, userAccount);
         if (!matches) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户包含特殊字符");
         }
 
         String digestPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -114,7 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = userMapper.selectOne(userQueryWrapper);
         if (user == null) {
             log.info("User login error, account or password error");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"两次密码输入不相同");
         }
         // TODO: 2023/2/26 单位之间内限制错误登录次数
 
