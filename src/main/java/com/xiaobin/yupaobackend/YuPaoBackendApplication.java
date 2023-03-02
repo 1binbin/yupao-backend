@@ -9,9 +9,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-@MapperScan("com.xiaobin.usercenterbackend.mapper")
-public class UserCenterBackendApplication {
+@MapperScan("com.xiaobin.yupaobackend.mapper")
+public class YuPaoBackendApplication {
     public static void main(String[] args) {
-        SpringApplication.run(UserCenterBackendApplication.class, args);
+        SpringApplication.run(YuPaoBackendApplication.class, args);
     }
 }

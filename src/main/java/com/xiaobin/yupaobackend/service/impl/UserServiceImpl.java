@@ -2,6 +2,8 @@ package com.xiaobin.yupaobackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.xiaobin.yupaobackend.common.ErrorCode;
 import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.mapper.UserMapper;
@@ -17,6 +19,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -155,6 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setUserStatus(user.getUserStatus());
         handlerUser.setPlanetCode(user.getPlanetCode());
         handlerUser.setUserRole(user.getUserRole());
+        handlerUser.setTags(user.getTags());
         return handlerUser;
     }
 
@@ -185,15 +189,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签列表为空");
         }
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        // SQL查询
+        /*QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         // 拼接like查询
         for (String tagName : tagNameList) {
             // 等价于 like ····· and like ······
             userQueryWrapper = userQueryWrapper.like("tags", tagName);
         }
-        List<User> userList = userMapper.selectList(userQueryWrapper);
+        List<User> userList = userMapper.selectList(userQueryWrapper);*/
         // 遍历得到的userList将每个用户进行脱敏，然后重新组成一个List并返回
-        return userList.stream().map(this::getSafeUser).collect(Collectors.toList());
+
+        // 内存查询
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        // 1.查询所有用户
+        List<User> userList = userMapper.selectList(userQueryWrapper);
+        // 2.在内存中进行运算
+        Gson gson = new Gson();
+        // 使用集合的语法糖过滤掉不需要的信息
+        return userList.stream().filter(user -> {
+            String userTags = user.getTags();
+            if (StringUtils.isBlank(userTags)) {
+                return false;
+            }
+            Set<String> tempTagNameSet = gson.fromJson(userTags, new TypeToken<Set<String>>() {
+            }.getType());
+            for (String tagName : tagNameList) {
+                //    3.过滤掉不需要的tagName
+                if (!tempTagNameSet.contains(tagName)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafeUser).collect(Collectors.toList());
     }
 }
 
