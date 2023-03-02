@@ -18,7 +18,9 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -134,6 +136,79 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return safeUser;
     }
 
+
+    /**
+     * 用户注销
+     *
+     * @param request 请求域
+     * @return
+     */
+    @Override
+    public int userLoginOut(HttpServletRequest request) {
+        if (request == null) {
+            return 0;
+        }
+        // 移除session中保存的用户信息即为注销
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 1;
+    }
+
+    /**
+     * 根据标签搜索用户【使用内存查询】
+     *
+     * @param tagNameList 标签列表
+     * @return 脱密的用户信息
+     */
+    @Override
+    public List<User> searchUserByTags(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签列表为空");
+        }
+        // 内存查询
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        // 1.查询所有用户
+        List<User> userList = userMapper.selectList(userQueryWrapper);
+        // 2.在内存中进行运算
+        Gson gson = new Gson();
+        // 使用集合的语法糖过滤掉不需要的信息
+        return userList.stream().filter(user -> {
+            String userTags = user.getTags();
+            Set<String> tempTagNameSet = gson.fromJson(userTags, new TypeToken<Set<String>>() {
+            }.getType());
+            // 判空
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+            for (String tagName : tagNameList) {
+                //    3.过滤掉不需要的tagName
+                if (!tempTagNameSet.contains(tagName)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafeUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据标签搜索用户【根据SQL语句】
+     *
+     * @param tagNameList 标签列表
+     * @return 脱密的用户信息
+     */
+    @Deprecated
+    private List<User> searchUserByTagsBySQL(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签列表为空");
+        }
+        // SQL查询
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        // 拼接like查询
+        for (String tagName : tagNameList) {
+            // 等价于 like ····· and like ······
+            userQueryWrapper = userQueryWrapper.like("tags", tagName);
+        }
+        List<User> userList = userMapper.selectList(userQueryWrapper);
+        return userList.stream().map(this::getSafeUser).collect(Collectors.toList());
+    }
+
     /**
      * 用户脱敏
      *
@@ -160,67 +235,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setUserRole(user.getUserRole());
         handlerUser.setTags(user.getTags());
         return handlerUser;
-    }
-
-    /**
-     * 用户注销
-     *
-     * @param request 请求域
-     * @return
-     */
-    @Override
-    public int userLoginOut(HttpServletRequest request) {
-        if (request == null) {
-            return 0;
-        }
-        // 移除session中保存的用户信息即为注销
-        request.getSession().removeAttribute(USER_LOGIN_STATE);
-        return 1;
-    }
-
-    /**
-     * 根据标签搜索用户
-     *
-     * @param tagNameList 标签列表
-     * @return 脱密的用户信息
-     */
-    @Override
-    public List<User> searchUserByTags(List<String> tagNameList) {
-        if (CollectionUtils.isEmpty(tagNameList)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签列表为空");
-        }
-        // SQL查询
-        /*QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        // 拼接like查询
-        for (String tagName : tagNameList) {
-            // 等价于 like ····· and like ······
-            userQueryWrapper = userQueryWrapper.like("tags", tagName);
-        }
-        List<User> userList = userMapper.selectList(userQueryWrapper);*/
-        // 遍历得到的userList将每个用户进行脱敏，然后重新组成一个List并返回
-
-        // 内存查询
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        // 1.查询所有用户
-        List<User> userList = userMapper.selectList(userQueryWrapper);
-        // 2.在内存中进行运算
-        Gson gson = new Gson();
-        // 使用集合的语法糖过滤掉不需要的信息
-        return userList.stream().filter(user -> {
-            String userTags = user.getTags();
-            if (StringUtils.isBlank(userTags)) {
-                return false;
-            }
-            Set<String> tempTagNameSet = gson.fromJson(userTags, new TypeToken<Set<String>>() {
-            }.getType());
-            for (String tagName : tagNameList) {
-                //    3.过滤掉不需要的tagName
-                if (!tempTagNameSet.contains(tagName)) {
-                    return false;
-                }
-            }
-            return true;
-        }).map(this::getSafeUser).collect(Collectors.toList());
     }
 }
 

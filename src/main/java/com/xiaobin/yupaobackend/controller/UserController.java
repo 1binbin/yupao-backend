@@ -9,6 +9,7 @@ import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.domain.request.UserLoginRequest;
 import com.xiaobin.yupaobackend.model.domain.request.UserRegisterRequest;
 import com.xiaobin.yupaobackend.service.UserService;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
  * @Author hongxiaobin
  * @Time 2023/2/26-21:07
  */
+@Api("用户管理接口")
 @RestController
 @RequestMapping("/user")
 public class UserController {

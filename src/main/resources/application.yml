@@ -11,6 +11,11 @@ spring:
 #    Session timeout
   session:
     timeout: 86400
+#    Swagger-UI starts 404 problem, add interception
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+
 server:
   port: 8080
 #  Uniform request prefix
