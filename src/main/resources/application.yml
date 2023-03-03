@@ -11,9 +11,18 @@ spring:
     url: jdbc:mysql://localhost:3306/yupao?serverTimezone=Asia/Shanghai
     username: root
     password: Abin21428!!
-#    Session timeout
+#    Session timeout (in minutes)
   session:
     timeout: 86400
+    store-type: redis
+
+#    Redis配置
+  redis:
+    port: 6379
+    host: 192.168.56.130
+    password: Abin21428!!
+    database: 0
+
 #    Swagger-UI starts 404 problem, add interception
   mvc:
     pathmatch:
