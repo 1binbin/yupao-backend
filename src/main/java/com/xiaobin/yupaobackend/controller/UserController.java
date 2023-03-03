@@ -79,7 +79,7 @@ public class UserController {
 
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(@RequestParam(required = false) String username, HttpServletRequest request) {
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH, "账号不是管理员，暂无权限");
         }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
@@ -98,7 +98,7 @@ public class UserController {
         if (id < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号小于0");
         }
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH, "账号不是管理员，暂无权限");
         }
         // 实现的是逻辑删除
@@ -131,17 +131,15 @@ public class UserController {
         return ResultUtils.success(searchUserByTags);
     }
 
-
-    /**
-     * 鉴权 仅管理员可查询
-     *
-     * @param request 请求域
-     * @return 是否为管理员
-     */
-    private boolean isAdmin(HttpServletRequest request) {
-        Object userObject = request.getSession().getAttribute(USER_LOGIN_STATE);
-        // 强转不需要判空，如果为空转为空
-        User user = (User) userObject;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
+        // 1.判空
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户信息为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        // 2.判断权限
+        Integer result = userService.updateUser(user,loginUser);
+        return ResultUtils.success(result);
     }
 }

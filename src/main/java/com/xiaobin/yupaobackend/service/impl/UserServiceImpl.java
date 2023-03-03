@@ -25,8 +25,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.xiaobin.yupaobackend.contant.UserConstant.SALT;
-import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
+import static com.xiaobin.yupaobackend.contant.UserConstant.*;
 
 /**
  * 用户服务实现类
@@ -187,6 +186,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }).map(this::getSafeUser).collect(Collectors.toList());
     }
 
+    @Override
+    public Integer updateUser(User user, User loginUser) {
+        if (user == null || loginUser == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户信息为空");
+        }
+        Long userId = user.getId();
+        if (userId == null || userId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户ID为空");
+        }
+        Long loginUserId = loginUser.getId();
+        if (loginUserId == null || loginUserId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "登录用户ID为空");
+        }
+        if (!userId.equals(loginUserId) && !isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "无权限");
+        }
+
+        User userInfo = userMapper.selectById(userId);
+        if (userInfo == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户信息为空");
+        }
+        return userMapper.updateById(user);
+    }
+
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.NO_LOGIN, "用户未登录");
+        }
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.NO_LOGIN, "账号未登录");
+        }
+        return (User) userObj;
+    }
+
     /**
      * 根据标签搜索用户【根据SQL语句】
      *
@@ -226,6 +261,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setUsername(user.getUsername());
         handlerUser.setUserAccount(user.getUserAccount());
         handlerUser.setAvatarUrl(user.getAvatarUrl());
+        // TODO: 2023/3/3 重写一个DTO，将表示性别的1与0更改为男与女
         handlerUser.setGender(user.getGender());
         handlerUser.setPhone(user.getPhone());
         handlerUser.setEmail(user.getEmail());
@@ -235,6 +271,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         handlerUser.setUserRole(user.getUserRole());
         handlerUser.setTags(user.getTags());
         return handlerUser;
+    }
+
+    /**
+     * 鉴权 仅管理员可查询
+     *
+     * @param request 请求域
+     * @return 是否为管理员
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        Object userObject = request.getSession().getAttribute(USER_LOGIN_STATE);
+        // 强转不需要判空，如果为空转为空
+        User user = (User) userObject;
+        return user != null && user.getUserRole() == ADMIN_ROLE;
+    }
+
+    @Override
+    public boolean isAdmin(User loginUser) {
+        return loginUser != null && loginUser.getUserRole() == ADMIN_ROLE;
     }
 }
 
