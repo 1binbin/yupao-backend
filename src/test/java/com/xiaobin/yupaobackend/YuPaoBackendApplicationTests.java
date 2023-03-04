@@ -8,6 +8,7 @@ class YuPaoBackendApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }

@@ -25,7 +25,6 @@ public class InsertUsers {
 //    @Scheduled(initialDelay = 5000, fixedRate = Long.MAX_VALUE)
     public void doInsertUsers() {
         StopWatch stopWatch = new StopWatch();
-        System.out.println("goodgoodgood");
         stopWatch.start();
         final int INSERT_NUM = 1000;
         for (int i = 0; i < INSERT_NUM; i++) {

@@ -1,6 +1,8 @@
 package com.xiaobin.yupaobackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiaobin.yupaobackend.common.BaseResponse;
 import com.xiaobin.yupaobackend.common.ErrorCode;
 import com.xiaobin.yupaobackend.common.ResultUtils;
@@ -120,7 +122,8 @@ public class UserController {
 
     /**
      * 删除用户接口
-     * @param id 要删除的用户id
+     *
+     * @param id      要删除的用户id
      * @param request 登录态
      * @return 返回体
      */
@@ -139,6 +142,7 @@ public class UserController {
 
     /**
      * 查询登录用户信息接口
+     *
      * @param httpServletRequest 用户登录态
      * @return 返回体
      */
@@ -160,6 +164,7 @@ public class UserController {
 
     /**
      * 根据标签查询用户信息接口
+     *
      * @param tagNameList 标签列表
      * @return 返回体
      */
@@ -174,7 +179,8 @@ public class UserController {
 
     /**
      * 更新用户信息接口
-     * @param user 新的用户信息
+     *
+     * @param user    新的用户信息
      * @param request 用户登录态
      * @return 返回体
      */
@@ -195,14 +201,15 @@ public class UserController {
 
     /**
      * 主页推荐用户接口
+     * @param pageSize 每一页包含多少数据
+     * @param pageNum 当前第几页
      * @return 返回体
      */
     @GetMapping("/recommend")
-    public BaseResponse<List<User>> recommendUsers() {
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum) {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        List<User> list = userService.list(userQueryWrapper);
-        // 先转换为数据流，循环设置每个密码为空，再拼接成一个完整的list
-        List<User> result = list.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
+        // 分页查询
+        Page<User> result = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
         return ResultUtils.success(result);
     }
 }

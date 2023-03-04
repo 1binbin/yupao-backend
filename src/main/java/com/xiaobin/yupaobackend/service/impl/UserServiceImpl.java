@@ -140,7 +140,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 用户注销
      *
      * @param request 请求域
-     * @return
+     * @return 注销状态
      */
     @Override
     public int userLoginOut(HttpServletRequest request) {
