@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.xiaobin.yupaobackend.contant.UserConstant.ADMIN_ROLE;
 import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -36,6 +35,12 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    /**
+     * 注册接口
+     *
+     * @param userRegisterRequest 用户注册信息
+     * @return 返回体
+     */
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
@@ -53,6 +58,13 @@ public class UserController {
         return ResultUtils.success(userRegister);
     }
 
+    /**
+     * 登录接口
+     *
+     * @param userLoginRequest 用户登录信息
+     * @param request          用户登录态
+     * @return 返回体
+     */
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest,
                                         HttpServletRequest request) {
@@ -68,6 +80,12 @@ public class UserController {
         return ResultUtils.success(user);
     }
 
+    /**
+     * 退出登录接口
+     *
+     * @param request 用户登录态
+     * @return 返回体
+     */
     @PostMapping("/logout")
     public BaseResponse<Integer> userLoginOut(HttpServletRequest request) {
         if (request == null) {
@@ -77,6 +95,13 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    /**
+     * 根据用户名查询用户信息接口
+     *
+     * @param username 用户昵称
+     * @param request  登录态
+     * @return 返回体
+     */
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(@RequestParam(required = false) String username, HttpServletRequest request) {
         if (!userService.isAdmin(request)) {
@@ -93,6 +118,12 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    /**
+     * 删除用户接口
+     * @param id 要删除的用户id
+     * @param request 登录态
+     * @return 返回体
+     */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (id < 0) {
@@ -106,6 +137,11 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    /**
+     * 查询登录用户信息接口
+     * @param httpServletRequest 用户登录态
+     * @return 返回体
+     */
     @GetMapping("/current")
     public BaseResponse<User> getCurrent(HttpServletRequest httpServletRequest) {
         Object userObject = httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
@@ -122,6 +158,11 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    /**
+     * 根据标签查询用户信息接口
+     * @param tagNameList 标签列表
+     * @return 返回体
+     */
     @GetMapping("/search/tags")
     public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
         if (CollectionUtils.isEmpty(tagNameList)) {
@@ -131,15 +172,37 @@ public class UserController {
         return ResultUtils.success(searchUserByTags);
     }
 
+    /**
+     * 更新用户信息接口
+     * @param user 新的用户信息
+     * @param request 用户登录态
+     * @return 返回体
+     */
     @PostMapping("/update")
     public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
         // 1.判空
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户信息为空");
         }
+        if (user.getUsername() == null && user.getGender() == null && user.getAvatarUrl() == null && user.getPhone() == null && user.getEmail() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户没有更新信息");
+        }
         User loginUser = userService.getLoginUser(request);
         // 2.判断权限
-        Integer result = userService.updateUser(user,loginUser);
+        Integer result = userService.updateUser(user, loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 主页推荐用户接口
+     * @return 返回体
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<List<User>> recommendUsers() {
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        List<User> list = userService.list(userQueryWrapper);
+        // 先转换为数据流，循环设置每个密码为空，再拼接成一个完整的list
+        List<User> result = list.stream().map(user -> userService.getSafeUser(user)).collect(Collectors.toList());
         return ResultUtils.success(result);
     }
 }
