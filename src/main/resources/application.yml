@@ -21,7 +21,7 @@ spring:
     port: 6379
     host: 192.168.56.131
     password: Abin21428!!
-    database: 1
+    database: 0
 
   #    Swagger-UI starts 404 problem, add interception
   mvc:

@@ -1,7 +1,6 @@
 package com.xiaobin.yupaobackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiaobin.yupaobackend.common.BaseResponse;
 import com.xiaobin.yupaobackend.common.ErrorCode;
@@ -12,15 +11,20 @@ import com.xiaobin.yupaobackend.model.domain.request.UserLoginRequest;
 import com.xiaobin.yupaobackend.model.domain.request.UserRegisterRequest;
 import com.xiaobin.yupaobackend.service.UserService;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.xiaobin.yupaobackend.contant.RedisContant.RECOMMEND_REDIS_KEY;
 import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -33,9 +37,12 @@ import static com.xiaobin.yupaobackend.contant.UserConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = {"http://localhost:3000"})
+@Slf4j
 public class UserController {
     @Resource
     private UserService userService;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 注册接口
@@ -201,15 +208,31 @@ public class UserController {
 
     /**
      * 主页推荐用户接口
+     *
      * @param pageSize 每一页包含多少数据
-     * @param pageNum 当前第几页
+     * @param pageNum  当前第几页
+     * @param request  用户登录态
      * @return 返回体
      */
     @GetMapping("/recommend")
-    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum) {
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
+        // 判断缓存中有无数据，有则读取缓存，无则读取数据库并且保存到缓存
+        User loginUser = userService.getLoginUser(request);
+        String redisKey = String.format(RECOMMEND_REDIS_KEY + "%s", loginUser.getId());
+        ValueOperations<String, Object> stringObjectValueOperations = redisTemplate.opsForValue();
+        Page<User> result = (Page<User>) stringObjectValueOperations.get(redisKey);
+        if (result != null) {
+            return ResultUtils.success(result);
+        }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         // 分页查询
-        Page<User> result = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        result = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        // 写入缓存
+        try {
+            stringObjectValueOperations.set(redisKey, result, 5, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("redis set key error", e);
+        }
         return ResultUtils.success(result);
     }
 }
