@@ -49,7 +49,7 @@ public class PreCacheJob {
      */
     private final long pageSize = 20;
 
-    @Scheduled(cron = "0 0,59 20 * * ? ")
+    @Scheduled(cron = "0 0,29 17 * * ? ")
     public void doCacheRecommendUsers() {
         // 加分布式锁，保证只有一个服务器进行缓存预热
         RLock lock = redissonClient.getLock(RECOMMEND_REDISSON_LOCK);
