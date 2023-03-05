@@ -10,4 +10,6 @@ public interface RedisContant {
      * 推荐信息缓存key前缀
      */
     String RECOMMEND_REDIS_KEY = "yupao:user:recommend:";
+
+    String RECOMMEND_REDISSON_LOCK = "yupao:precachejob:docache:lock";
 }

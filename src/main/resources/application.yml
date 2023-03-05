@@ -22,6 +22,7 @@ spring:
     host: 192.168.56.131
     password: Abin21428!!
     database: 0
+    redissonDataBase: 2
 
   #    Swagger-UI starts 404 problem, add interception
   mvc:

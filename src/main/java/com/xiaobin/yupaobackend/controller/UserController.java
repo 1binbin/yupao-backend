@@ -228,6 +228,7 @@ public class UserController {
         // 分页查询
         result = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
         // 写入缓存
+        // TODO: 2023/3/5 缓存穿透与缓存雪崩问题 
         try {
             stringObjectValueOperations.set(redisKey, result, 5, TimeUnit.MINUTES);
         } catch (Exception e) {
