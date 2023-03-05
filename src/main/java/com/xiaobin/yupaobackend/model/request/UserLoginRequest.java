@@ -1,4 +1,4 @@
-package com.xiaobin.yupaobackend.model.domain.request;
+package com.xiaobin.yupaobackend.model.request;
 
 import lombok.Data;
 
