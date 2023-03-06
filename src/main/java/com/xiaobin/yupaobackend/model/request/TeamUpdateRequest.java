@@ -7,13 +7,16 @@ import java.util.Date;
 
 /**
  * 请求队伍信息实体类
- *
  * @Author hongxiaobin
  * @Time 2023/3/6-16:00
  */
 @Data
-public class TeamAddRequest implements Serializable {
+public class TeamUpdateRequest implements Serializable {
     private static final long serialVersionUID = -6759395627914971767L;
+    /**
+     * 要更新哪一条数据
+     */
+    private Long id;
     /**
      * 队伍名称
      */
@@ -25,19 +28,9 @@ public class TeamAddRequest implements Serializable {
     private String description;
 
     /**
-     * 最大人数
-     */
-    private Integer maxNum;
-
-    /**
      * 过期时间
      */
     private Date expireTime;
-
-    /**
-     * 用户id（队长 id）
-     */
-    private Long userId;
 
     /**
      * 0 - 公开，1 - 私有，2 - 加密

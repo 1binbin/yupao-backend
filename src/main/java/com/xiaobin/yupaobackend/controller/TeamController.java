@@ -10,6 +10,9 @@ import com.xiaobin.yupaobackend.model.domain.Team;
 import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.dto.TeamQuery;
 import com.xiaobin.yupaobackend.model.request.TeamAddRequest;
+import com.xiaobin.yupaobackend.model.request.TeamJoinRequest;
+import com.xiaobin.yupaobackend.model.request.TeamUpdateRequest;
+import com.xiaobin.yupaobackend.model.vo.TeamUserVo;
 import com.xiaobin.yupaobackend.service.TeamService;
 import com.xiaobin.yupaobackend.service.UserService;
 import com.xiaobin.yupaobackend.service.UserTeamService;
@@ -48,7 +51,7 @@ public class TeamController {
         }
         Team team = new Team();
         User loginUser = userService.getLoginUser(request);
-        BeanUtils.copyProperties(teamAddRequest,team);
+        BeanUtils.copyProperties(teamAddRequest, team);
         long result = teamService.addTeam(team, loginUser);
         return ResultUtils.success(result);
     }
@@ -66,11 +69,12 @@ public class TeamController {
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest, HttpServletRequest request) {
+        if (teamUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍信息为空");
         }
-        boolean result = teamService.updateById(team);
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.updateTeam(teamUpdateRequest, loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍更新失败");
         }
@@ -90,14 +94,12 @@ public class TeamController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<List<Team>> getTeams(TeamQuery teamQuery) {
+    public BaseResponse<List<TeamUserVo>> getTeams(TeamQuery teamQuery, HttpServletRequest request) {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(team, teamQuery);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        List<Team> list = teamService.list(queryWrapper);
+        boolean admin = userService.isAdmin(request);
+        List<TeamUserVo> list = teamService.listTeams(teamQuery, admin);
         return ResultUtils.success(list);
     }
 
@@ -114,5 +116,15 @@ public class TeamController {
         Page<Team> page = new Page<>(pageNum, pageSize);
         Page<Team> list = teamService.page(page, queryWrapper);
         return ResultUtils.success(list);
+    }
+
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request) {
+        if (teamJoinRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.joinTeam(teamJoinRequest,loginUser);
+        return ResultUtils.success(result);
     }
 }
