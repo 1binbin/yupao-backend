@@ -7,7 +7,9 @@ import com.xiaobin.yupaobackend.common.ErrorCode;
 import com.xiaobin.yupaobackend.common.ResultUtils;
 import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.model.domain.Team;
+import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.dto.TeamQuery;
+import com.xiaobin.yupaobackend.model.request.TeamAddRequest;
 import com.xiaobin.yupaobackend.service.TeamService;
 import com.xiaobin.yupaobackend.service.UserService;
 import com.xiaobin.yupaobackend.service.UserTeamService;
@@ -17,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -39,15 +42,15 @@ public class TeamController {
     private UserTeamService userTeamService;
 
     @PostMapping("/add")
-    public BaseResponse<Long> addTeam(@RequestBody Team team) {
-        if (team == null) {
+    public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request) {
+        if (teamAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍信息为空");
         }
-        boolean result = teamService.save(team);
-        if (!result) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍插入失败");
-        }
-        return ResultUtils.success(team.getId());
+        Team team = new Team();
+        User loginUser = userService.getLoginUser(request);
+        BeanUtils.copyProperties(teamAddRequest,team);
+        long result = teamService.addTeam(team, loginUser);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/delete")
@@ -104,7 +107,7 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         Team team = new Team();
-        BeanUtils.copyProperties(team, teamQuery);
+        BeanUtils.copyProperties(teamQuery, team);
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
         int pageNum = teamQuery.getPageNum();
         int pageSize = teamQuery.getPageSize();

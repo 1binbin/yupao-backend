@@ -3,6 +3,7 @@ package com.xiaobin.yupaobackend.service;
 import com.xiaobin.yupaobackend.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.request.TeamAddRequest;
 
 /**
 * @author hongxiaobin

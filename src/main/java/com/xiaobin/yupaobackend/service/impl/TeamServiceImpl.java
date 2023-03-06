@@ -7,15 +7,16 @@ import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.mapper.TeamMapper;
 import com.xiaobin.yupaobackend.model.domain.Team;
 import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.domain.UserTeam;
 import com.xiaobin.yupaobackend.model.enums.TeamStatusEnum;
+import com.xiaobin.yupaobackend.model.request.TeamAddRequest;
 import com.xiaobin.yupaobackend.service.TeamService;
+import com.xiaobin.yupaobackend.service.UserTeamService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
@@ -29,6 +30,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         implements TeamService {
     @Resource
     private TeamService teamService;
+    @Resource
+    private UserTeamService userTeamService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -57,26 +60,39 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍状态不满足要求");
         }
         String password = team.getPassword();
-        if (TeamStatusEnum.SECRET.equals(teamStatusEnum)){
+        if (TeamStatusEnum.SECRET.equals(teamStatusEnum)) {
             if (StringUtils.isBlank(password) || password.length() > 32) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码格式不正确");
             }
         }
         Date date = team.getExpireTime();
         if (new Date().after(date)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"超时时间小于当前时间");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "超时时间小于当前时间");
         }
         // TODO: 2023/3/5 用户可能同时创建100个队伍，使用加锁解决
         QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<>();
-        final long id = loginUser.getId();
-        teamQueryWrapper.eq("userId",id);
+        final long userId = loginUser.getId();
+        teamQueryWrapper.eq("userId", userId);
         long count = this.count(teamQueryWrapper);
-        if (count > 5) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户最多创建5个队伍");
+        if (count >= 5) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户最多创建5个队伍");
         }
         team.setId(null);
+        team.setUserId(userId);
+        Long teamId = team.getId();
         boolean result = this.save(team);
-        return 0;
+        if (!result || teamId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍创建失败");
+        }
+        UserTeam userTeam = new UserTeam();
+        userTeam.setUserId(userId);
+        userTeam.setTeamId(teamId);
+        userTeam.setJoinTime(new Date());
+        result = userTeamService.save(userTeam);
+        if (!result) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍插入失败");
+        }
+        return teamId;
     }
 }
 
