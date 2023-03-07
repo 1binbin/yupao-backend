@@ -8,6 +8,7 @@ import com.xiaobin.yupaobackend.common.ResultUtils;
 import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.model.domain.Team;
 import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.domain.UserTeam;
 import com.xiaobin.yupaobackend.model.dto.TeamQuery;
 import com.xiaobin.yupaobackend.model.request.*;
 import com.xiaobin.yupaobackend.model.vo.TeamUserVo;
@@ -21,7 +22,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 队伍管理控制器
@@ -61,7 +65,7 @@ public class TeamController {
         }
         Long teamId = deleteRequest.getId();
         User loginUser = userService.getLoginUser(request);
-        boolean result = teamService.deleteTeam(teamId,loginUser);
+        boolean result = teamService.deleteTeam(teamId, loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍删除失败");
         }
@@ -119,12 +123,12 @@ public class TeamController {
     }
 
     @PostMapping("/join")
-    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest,HttpServletRequest request) {
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest request) {
         if (teamJoinRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         User loginUser = userService.getLoginUser(request);
-        boolean result = teamService.joinTeam(teamJoinRequest,loginUser);
+        boolean result = teamService.joinTeam(teamJoinRequest, loginUser);
         return ResultUtils.success(result);
     }
 
@@ -136,5 +140,47 @@ public class TeamController {
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.quitTeam(teamQuiteRequest, loginUser);
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 获取我创建的队伍
+     *
+     * @param teamQuery 搜索信息
+     * @param request 登录态
+     * @return 队伍信息
+     */
+    @GetMapping("/list/my/create")
+    public BaseResponse<List<TeamUserVo>> listMyCreateTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        teamQuery.setUserId(loginUser.getId());
+        List<TeamUserVo> list = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(list);
+    }
+
+    /**
+     * 获取我加入的队伍
+     *
+     * @param teamQuery 搜索信息
+     * @param request 登录态
+     * @return 队伍信息
+     */
+    @GetMapping("/list/my/join")
+    public BaseResponse<List<TeamUserVo>> listMyJoinTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.eq("userId",loginUser.getId());
+        List<UserTeam> teamList = userTeamService.list(userTeamQueryWrapper);
+        // 取出不重复的队伍ID
+        Map<Long, List<UserTeam>> collect = teamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        ArrayList<Long> longArrayList = new ArrayList<>(collect.keySet());
+        teamQuery.setIdList(longArrayList);
+        List<TeamUserVo> list = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(list);
     }
 }
