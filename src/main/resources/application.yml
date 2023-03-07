@@ -19,7 +19,7 @@ spring:
   #    Redis配置
   redis:
     port: 6379
-    host: 192.168.56.131
+    host: 192.168.56.132
     password: Abin21428!!
     database: 0
     redissonDataBase: 2

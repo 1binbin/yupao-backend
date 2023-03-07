@@ -5,6 +5,7 @@ import com.xiaobin.yupaobackend.model.domain.Team;
 import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.dto.TeamQuery;
 import com.xiaobin.yupaobackend.model.request.TeamJoinRequest;
+import com.xiaobin.yupaobackend.model.request.TeamQuiteRequest;
 import com.xiaobin.yupaobackend.model.request.TeamUpdateRequest;
 import com.xiaobin.yupaobackend.model.vo.TeamUserVo;
 
@@ -50,4 +51,22 @@ public interface TeamService extends IService<Team> {
      * @return 是否加入成功
      */
     boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
+
+    /**
+     * 提出队伍
+     *
+     * @param teamQuiteRequest 队伍ID
+     * @param loginUser        登录用户信息
+     * @return 是否退出成功
+     */
+    boolean quitTeam(TeamQuiteRequest teamQuiteRequest, User loginUser);
+
+    /**
+     * 队长解散队伍
+     *
+     * @param teamId 队伍ID
+     * @param loginUser 登录用户信息
+     * @return 是否解散成功
+     */
+    boolean deleteTeam(Long teamId, User loginUser);
 }

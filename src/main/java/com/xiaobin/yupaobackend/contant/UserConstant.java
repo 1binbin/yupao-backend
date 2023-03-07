@@ -18,6 +18,10 @@ public interface UserConstant {
     String SALT = "bin";
 
     /**
+     * 盐值，混淆密码
+     */
+    String TEAM_SALT = "bin";
+    /**
      * 用户角色
      */
     int DEFAULT_ROLE = 0;

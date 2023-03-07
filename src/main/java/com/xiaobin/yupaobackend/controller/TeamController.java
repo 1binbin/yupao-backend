@@ -9,9 +9,7 @@ import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.model.domain.Team;
 import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.dto.TeamQuery;
-import com.xiaobin.yupaobackend.model.request.TeamAddRequest;
-import com.xiaobin.yupaobackend.model.request.TeamJoinRequest;
-import com.xiaobin.yupaobackend.model.request.TeamUpdateRequest;
+import com.xiaobin.yupaobackend.model.request.*;
 import com.xiaobin.yupaobackend.model.vo.TeamUserVo;
 import com.xiaobin.yupaobackend.service.TeamService;
 import com.xiaobin.yupaobackend.service.UserService;
@@ -33,7 +31,7 @@ import java.util.List;
  */
 @Api("队伍管理接口")
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/team")
 @CrossOrigin(origins = {"http://localhost:3000"})
 @Slf4j
 public class TeamController {
@@ -57,11 +55,13 @@ public class TeamController {
     }
 
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody long id) {
-        if (id <= 0) {
+    public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null || deleteRequest.getId() < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍ID不正确");
         }
-        boolean result = teamService.removeById(id);
+        Long teamId = deleteRequest.getId();
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.deleteTeam(teamId,loginUser);
         if (!result) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍删除失败");
         }
@@ -125,6 +125,16 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.joinTeam(teamJoinRequest,loginUser);
+        return ResultUtils.success(result);
+    }
+
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuiteRequest teamQuiteRequest, HttpServletRequest request) {
+        if (teamQuiteRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "队伍ID为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.quitTeam(teamQuiteRequest, loginUser);
         return ResultUtils.success(result);
     }
 }
