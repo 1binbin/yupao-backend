@@ -11,5 +11,16 @@ public interface RedisContant {
      */
     String RECOMMEND_REDIS_KEY = "yupao:user:recommend:";
 
+    /**
+     * 定时任务分布式锁
+     */
     String RECOMMEND_REDISSON_LOCK = "yupao:precachejob:docache:lock";
+
+
+    /**
+     * 加入队伍分布式锁
+     */
+    String JOINTEAM_REDISSON_LOCK = "yupao:teamserviceimpl:docache:lock";
+
+
 }

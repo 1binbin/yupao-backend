@@ -9,6 +9,7 @@ import com.xiaobin.yupaobackend.exception.BusinessException;
 import com.xiaobin.yupaobackend.model.domain.User;
 import com.xiaobin.yupaobackend.model.request.UserLoginRequest;
 import com.xiaobin.yupaobackend.model.request.UserRegisterRequest;
+import com.xiaobin.yupaobackend.model.vo.UserVo;
 import com.xiaobin.yupaobackend.service.UserService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -228,12 +229,21 @@ public class UserController {
         // 分页查询
         result = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
         // 写入缓存
-        // TODO: 2023/3/5 缓存穿透与缓存雪崩问题 
         try {
             stringObjectValueOperations.set(redisKey, result, 5, TimeUnit.MINUTES);
         } catch (Exception e) {
             log.error("redis set key error", e);
         }
         return ResultUtils.success(result);
+    }
+
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"要匹配的数量不正确");
+        }
+        User loginUser = userService.getLoginUser(request);
+        List<User> userVos = userService.matchUsers(num, loginUser);
+        return ResultUtils.success(userVos);
     }
 }

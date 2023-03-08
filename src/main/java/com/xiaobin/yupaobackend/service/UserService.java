@@ -2,6 +2,7 @@ package com.xiaobin.yupaobackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiaobin.yupaobackend.model.domain.User;
+import com.xiaobin.yupaobackend.model.vo.UserVo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -94,4 +95,13 @@ public interface UserService extends IService<User> {
      * @return true-管理员
      */
     boolean isAdmin(User loginUser);
+
+    /**
+     * 匹配yonghu
+     *
+     * @param num       需要匹配的数量
+     * @param loginUser 当前登录用户
+     * @return 用户列表
+     */
+    List<User> matchUsers(long num, User loginUser);
 }

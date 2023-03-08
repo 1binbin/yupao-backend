@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -104,6 +105,29 @@ public class TeamController {
         }
         boolean admin = userService.isAdmin(request);
         List<TeamUserVo> list = teamService.listTeams(teamQuery, admin);
+        // 查询当前用户是否已加入队伍
+        final List<Long> teamIdList = list.stream().map(TeamUserVo::getId).collect(Collectors.toList());
+        QueryWrapper<UserTeam> teamQueryWrapper = new QueryWrapper<>();
+        try {
+            User loginUser = userService.getLoginUser(request);
+            teamQueryWrapper.eq("userId", loginUser.getId());
+            teamQueryWrapper.in("teamId", teamIdList);
+            List<UserTeam> userTeams = userTeamService.list(teamQueryWrapper);
+            Set<Long> hasJoinTeamId = userTeams.stream().map(UserTeam::getTeamId).collect(Collectors.toSet());
+            list.forEach(team -> {
+                boolean hasJoin = hasJoinTeamId.contains(team.getId());
+                team.setHasJoin(hasJoin);
+            });
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, e.getMessage());
+        }
+        // 查询加入队伍的人数
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("teamId", teamIdList);
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        // 队伍ID映射到加入这个队伍的用户列表
+        Map<Long, List<UserTeam>> teamIdUserTeamList = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        list.forEach(team -> team.setHasJoinNum(teamIdUserTeamList.getOrDefault(team.getId(), new ArrayList<>()).size()));
         return ResultUtils.success(list);
     }
 
@@ -146,7 +170,7 @@ public class TeamController {
      * 获取我创建的队伍
      *
      * @param teamQuery 搜索信息
-     * @param request 登录态
+     * @param request   登录态
      * @return 队伍信息
      */
     @GetMapping("/list/my/create")
@@ -164,7 +188,7 @@ public class TeamController {
      * 获取我加入的队伍
      *
      * @param teamQuery 搜索信息
-     * @param request 登录态
+     * @param request   登录态
      * @return 队伍信息
      */
     @GetMapping("/list/my/join")
@@ -174,7 +198,7 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
-        userTeamQueryWrapper.eq("userId",loginUser.getId());
+        userTeamQueryWrapper.eq("userId", loginUser.getId());
         List<UserTeam> teamList = userTeamService.list(userTeamQueryWrapper);
         // 取出不重复的队伍ID
         Map<Long, List<UserTeam>> collect = teamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
